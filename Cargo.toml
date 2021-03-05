@@ -7,7 +7,7 @@ description = "EIP-55 checksum and validator"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/PumpkinSeed/eip55-rs"
-keywords = ["eip55", "etheruem", "contract", "eip", "blockchain", "cryptocurrency"]
+keywords = ["eip55", "etheruem", "contract", "blockchain", "cryptocurrency"]
 
 [dependencies]
 sha3 = "0.9.1"
