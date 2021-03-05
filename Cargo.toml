@@ -1,6 +1,6 @@
 [package]
 name = "eip55"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["PumpkinSeed <qwer.kocka@gmail.com>"]
 edition = "2018"
 description = "EIP-55 checksum and validator"
@@ -10,5 +10,4 @@ repository = "https://github.com/PumpkinSeed/eip55-rs"
 keywords = ["eip55", "etheruem", "contract", "blockchain", "cryptocurrency"]
 
 [dependencies]
-sha3 = "0.9.1"
 rust-crypto = "0.2.36"
