@@ -1,13 +1,14 @@
-use crypto::digest::Digest;
-use crypto::sha3::Sha3;
+use sha3::{Digest, Keccak256};
 
 const PREFIX: &str = "0x";
 
 pub fn checksum(address: &str) -> String {
     let stripped = String::from(address.to_ascii_lowercase().trim_start_matches(PREFIX));
-    let mut keccak = Sha3::keccak256();
-    keccak.input_str(&stripped);
-    let hash = keccak.result_str();
+
+    let mut hasher = Keccak256::new();
+    hasher.update(stripped);
+    let hash_vec = hasher.finalize().to_vec();
+    let hash = hex::encode(hash_vec);
 
     let mut checksum = String::new();
     checksum.push_str(PREFIX);
