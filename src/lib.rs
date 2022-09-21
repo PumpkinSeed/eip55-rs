@@ -19,7 +19,7 @@ pub fn checksum(address: &str) -> String {
         if u32::from_str_radix(&char.to_string()[..], 16).unwrap() > 7 {
             checksum.push_str(&address[pos+2..pos+3].to_ascii_uppercase());
         } else {
-            checksum.push_str(&address[pos+2..pos+3]);
+            checksum.push_str(&address[pos+2..pos+3].to_ascii_lowercase());
         }
     }
 
@@ -55,5 +55,8 @@ mod tests {
         assert_eq!(validate_address("0xdbF03B407c01e7cD3CBea99509d93f8DDDC8C6FB"), false);
         assert_eq!(validate_address("0xfb6916095ca1df60bB79Ce92cE3Ea74c37c5D359"), false);
         assert_eq!(validate_address("0x5aAeb6053f3E94C9b9A09f33669435E7Ef1BeAed"), false);
+
+        assert_eq!(validate_address("0x000000000000000000000000000000000000dEAD"), false);
+        assert_eq!(validate_address("0x000000000000000000000000000000000000dEaD"), true);
     }
 }
