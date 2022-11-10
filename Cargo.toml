@@ -1,6 +1,6 @@
 [package]
 name = "eip55"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["PumpkinSeed <qwer.kocka@gmail.com>"]
 edition = "2018"
 description = "EIP-55 checksum and validator"
