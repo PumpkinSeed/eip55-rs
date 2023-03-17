@@ -1,6 +1,7 @@
 use sha3::{Digest, Keccak256};
 
 const PREFIX: &str = "0x";
+const INVALID_STRING: &str = "INVALID_STRING";
 
 /// Returns the mixed-case checksum address encoding.
 ///
@@ -20,7 +21,11 @@ const PREFIX: &str = "0x";
 /// ```
 pub fn checksum(address: &str) -> String {
     let trimmed = address.trim_start_matches(PREFIX);
-    let stripped = String::from(trimmed.to_ascii_lowercase());
+    if !pre_validate(trimmed) {
+        return String::from(INVALID_STRING);
+    }
+
+    let stripped = trimmed.to_ascii_lowercase();
 
     let mut hasher = Keccak256::new();
     hasher.update(stripped);
@@ -34,12 +39,28 @@ pub fn checksum(address: &str) -> String {
             break;
         }
         if u32::from_str_radix(&char.to_string()[..], 16).unwrap() > 7 {
-            checksum.push_str(&trimmed[pos..pos+1].to_ascii_uppercase());
+            checksum.push_str(&trimmed[pos..pos + 1].to_ascii_uppercase());
         } else {
-            checksum.push_str(&trimmed[pos..pos+1].to_ascii_lowercase());
+            checksum.push_str(&trimmed[pos..pos + 1].to_ascii_lowercase());
         }
     }
-    format!("0x{}", checksum)
+    format!("0x{checksum}")
+}
+
+fn pre_validate(address: &str) -> bool {
+    let data = address.to_lowercase();
+    if data.is_empty() {
+        return false;
+    }
+    for (_, char) in data.chars().enumerate() {
+        let ascii = char as u32;
+        // Check the ascii codes of numbers and lower case letters
+        if !((48..=57).contains(&ascii) || (97..=122).contains(&ascii)) {
+            return false;
+        }
+    }
+
+    true
 }
 
 #[test]
@@ -78,26 +99,75 @@ mod tests {
     #[test]
     fn test_validate_address() {
         // Base
-        assert_eq!(validate_address("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed"), true);
+        assert_eq!(
+            validate_address("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed"),
+            true
+        );
         // All caps
-        assert_eq!(validate_address("0x52908400098527886E0F7030069857D2E4169EE7"), true);
-        assert_eq!(validate_address("0x8617E340B3D01FA5F11F306F4090FD50E238070D"), true);
+        assert_eq!(
+            validate_address("0x52908400098527886E0F7030069857D2E4169EE7"),
+            true
+        );
+        assert_eq!(
+            validate_address("0x8617E340B3D01FA5F11F306F4090FD50E238070D"),
+            true
+        );
         // All Lower
-        assert_eq!(validate_address("0xde709f2102306220921060314715629080e2fb77"), true);
-        assert_eq!(validate_address("0x27b1fdb04752bbc536007a920d24acb045561c26"), true);
+        assert_eq!(
+            validate_address("0xde709f2102306220921060314715629080e2fb77"),
+            true
+        );
+        assert_eq!(
+            validate_address("0x27b1fdb04752bbc536007a920d24acb045561c26"),
+            true
+        );
         // Normal
-        assert_eq!(validate_address("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed"), true);
-        assert_eq!(validate_address("0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359"), true);
-        assert_eq!(validate_address("0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB"), true);
-        assert_eq!(validate_address("0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb"), true);
+        assert_eq!(
+            validate_address("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed"),
+            true
+        );
+        assert_eq!(
+            validate_address("0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359"),
+            true
+        );
+        assert_eq!(
+            validate_address("0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB"),
+            true
+        );
+        assert_eq!(
+            validate_address("0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb"),
+            true
+        );
 
         // False
-        assert_eq!(validate_address("0xD1220a0cf47c7B9Be7A2E6BA89F429762e7b9aDb"), false);
-        assert_eq!(validate_address("0xdbF03B407c01e7cD3CBea99509d93f8DDDC8C6FB"), false);
-        assert_eq!(validate_address("0xfb6916095ca1df60bB79Ce92cE3Ea74c37c5D359"), false);
-        assert_eq!(validate_address("0x5aAeb6053f3E94C9b9A09f33669435E7Ef1BeAed"), false);
+        assert_eq!(
+            validate_address("0xD1220a0cf47c7B9Be7A2E6BA89F429762e7b9aDb"),
+            false
+        );
+        assert_eq!(
+            validate_address("0xdbF03B407c01e7cD3CBea99509d93f8DDDC8C6FB"),
+            false
+        );
+        assert_eq!(
+            validate_address("0xfb6916095ca1df60bB79Ce92cE3Ea74c37c5D359"),
+            false
+        );
+        assert_eq!(
+            validate_address("0x5aAeb6053f3E94C9b9A09f33669435E7Ef1BeAed"),
+            false
+        );
 
-        assert_eq!(validate_address("0x000000000000000000000000000000000000dEAD"), false);
-        assert_eq!(validate_address("0x000000000000000000000000000000000000dEaD"), true);
+        // Invalid strings
+        assert_eq!(validate_address(""), false);
+        assert_eq!(validate_address("Îñţérñåţîöñåļîžåţîờñ"), false);
+
+        assert_eq!(
+            validate_address("0x000000000000000000000000000000000000dEAD"),
+            false
+        );
+        assert_eq!(
+            validate_address("0x000000000000000000000000000000000000dEaD"),
+            true
+        );
     }
 }
